@@ -12,6 +12,7 @@ library(htmltools)
 # give option to only display one individual, ie, when another is selected, the previous one is unselected
 # if variable is factor, give color palette options?
 # make multipanel with aspect ratio==1, look into cowplot pkg
+# add costline, or something that may give orientation on where the tracks are
 
 
 shinyModuleUserInterface <- function(id, label) {
