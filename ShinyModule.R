@@ -4,6 +4,7 @@ library(ggplot2)
 library(shinyWidgets)
 library(colourpicker)
 library(htmltools)
+library(ggforce)
 
 ## ToDo?: 
 # make it possible to change linesize
@@ -52,7 +53,7 @@ shinyModule <- function(input, output, session, data) {
   output$uiAttributeL <- renderUI({
    dataCC <- data@data[, colSums(is.na(data@data)) != nrow(data@data)] ## maybe look for a more efective way of doing this in case data set is very large
     selectInput(ns("attributeL"), "Select attribute", choices=colnames(dataCC))})
-    
+
   output$uiIndivL <- renderUI({
     # checkboxGroupInput(ns("indivL"), "Select individuals", choices=namesIndiv(data), selected=namesIndiv(data)[1], inline=TRUE)
     checkboxGroupButtons(ns("indivL"), "Select individuals", size="sm", choices=namesIndiv(data), selected=namesIndiv(data)[1],status="default",checkIcon = list(
