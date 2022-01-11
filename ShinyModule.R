@@ -16,13 +16,18 @@ library(ggforce)
 # add costline, or something that may give orientation on where the tracks are
 
 
+
+data <- readRDS("sixtyindiv.rds") ## check if there is a possibility to load data before running shiny app. These data are just used for the UI. They than again have to be loaded in the Shiny module as for any other shiny app.....
+
+
 shinyModuleUserInterface <- function(id, label) {
   ns <- NS(id)
   
   tagList(
     titlePanel("Plot track(s) colored by attribute"),
     fluidRow(
-      column(3,uiOutput(ns('uiAttributeL'))),
+      # column(3,uiOutput(ns('uiAttributeL'))),
+      column(3,selectInput(ns("attributeL"), "Select attribute", choices=colnames(data@data[, colSums(is.na(data@data)) != nrow(data@data)]))),
       column(3,selectInput(ns("panels"), "Choose display mode", choices=c("Single panel","Multipanel"), selected="Single panel", multiple=F)),
       column(2,colourInput(ns("colmin"), "Select colour: low", "blue")),
       column(2,colourInput(ns("colmid"), "mid", "yellow")),
@@ -50,9 +55,9 @@ shinyModuleConfiguration <- function(id, input) {
 shinyModule <- function(input, output, session, data) {
   ns <- session$ns
   current <- reactiveVal(data)
-  output$uiAttributeL <- renderUI({
-   dataCC <- data@data[, colSums(is.na(data@data)) != nrow(data@data)] ## maybe look for a more efective way of doing this in case data set is very large
-    selectInput(ns("attributeL"), "Select attribute", choices=colnames(dataCC))})
+  # output$uiAttributeL <- renderUI({
+  #  dataCC <- data@data[, colSums(is.na(data@data)) != nrow(data@data)] ## maybe look for a more efective way of doing this in case data set is very large
+  #   selectInput(ns("attributeL"), "Select attribute", choices=colnames(dataCC))})
 
   output$uiIndivL <- renderUI({
     # checkboxGroupInput(ns("indivL"), "Select individuals", choices=namesIndiv(data), selected=namesIndiv(data)[1], inline=TRUE)
