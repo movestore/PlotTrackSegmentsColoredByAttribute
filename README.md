@@ -1,8 +1,8 @@
-# Plot Of Track Segments Colored By Attribute
+# Plot Tracks Colored By Attribute
 
 MoveApps
 
-Github repository: github.com/movestore/PlotTrackSegmentsColoredByAttribute
+Github repository: github.com/movestore/PlotTracksColoredByAttribute
 
 ## Description
 Each segment of the plotted track(s) can be colored by the values of any of the available attributes associated to the locations. Single or multiple individuals can be displayed simultaneously.
