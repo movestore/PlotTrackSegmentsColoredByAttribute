@@ -5,6 +5,8 @@ library(shinyWidgets)
 library(colourpicker)
 library(htmltools)
 library(ggforce)
+library(units)
+library(lubridate)
 
 ## ToDo?: 
 # make it possible to change linesize
@@ -29,8 +31,7 @@ shinyModuleUserInterface <- function(id, label) {
       column(2,colourInput(ns("colmax"), "high", "red"))),
     uiOutput(ns('uiIndivL')),
     span(textOutput(ns("warningtext")),
-         
-    plotOutput(ns("plot")), style="color:red"),
+         plotOutput(ns("plot")), style="color:red"),
     fluidRow(
       # column(2,numericInput(ns("linesize"), "Width of line in mm", value=0.5, min = 0.1, max = 10, step=0.1)), # does not work for now
       column(2, style = "margin-top: 25px;", downloadButton(ns('savePlot'), 'Save Plot')),
@@ -51,9 +52,11 @@ shinyModule <- function(input, output, session, data) {
   ns <- session$ns
   current <- reactiveVal(data)
   output$uiAttributeL <- renderUI({
-   dataCC <- data@data[, colSums(is.na(data@data)) != nrow(data@data)] ## maybe look for a more efective way of doing this in case data set is very large
+    dataCC <- data@data[, colSums(is.na(data@data)) != nrow(data@data)] ## maybe look for a more effective way of doing this in case data set is very large
+    dataCC <- dataCC[, sapply(dataCC, is.POSIXt) != TRUE] ## removing timestamp columns as these cannot be currently plotted
+    dataCC <- dataCC[, sapply(dataCC, class) != "Date"]
     selectInput(ns("attributeL"), "Select attribute", choices=colnames(dataCC))})
-
+  
   output$uiIndivL <- renderUI({
     # checkboxGroupInput(ns("indivL"), "Select individuals", choices=namesIndiv(data), selected=namesIndiv(data)[1], inline=TRUE)
     checkboxGroupButtons(ns("indivL"), "Select individuals", size="sm", choices=namesIndiv(data), selected=namesIndiv(data)[1],status="default",checkIcon = list(
@@ -67,20 +70,34 @@ shinyModule <- function(input, output, session, data) {
     }else{
       mDF <- data.frame(long=coordinates(data)[,1],lat=coordinates(data)[,2],attribute=data@data[,input$attributeL], indiv=trackId(data))
       mDF <- mDF[mDF$indiv %in% c(input$indivL),]
+      
       if(input$panels=="Single panel"){
         output$warningtext <- NULL
         if(is.numeric(mDF[, "attribute"])){ 
           minattr <- min(mDF[, "attribute"],na.rm=T)
           maxattr <- max(mDF[, "attribute"],na.rm=T)
           mpt <- (minattr+maxattr)/2
-          ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=attribute, group=indiv))+ #, size=input$linesize
-            scale_colour_gradient2(low=input$colmin, mid=input$colmid, high=input$colmax, midpoint=mpt, name=input$attributeL
-                                   # , breaks=round(seq(minattr,maxattr,length.out=3),2),labels=round(seq(minattr,maxattr,length.out=3),2)
-            )+
-            coord_fixed()+
-            labs(x ="Longitude", y = "Latitude")+ #title=input$attributeL,
-            theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                  panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+          
+          if(class(mDF[, "attribute"])=="units"){
+            ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=as.numeric(attribute), group=indiv))+ #, size=input$linesize
+              scale_colour_gradient2(low=input$colmin, mid=input$colmid, high=input$colmax, midpoint=as.numeric(mpt), name=paste0(input$attributeL," (",units(mDF[, "attribute"])$numerator,")")
+                                     # , breaks=round(seq(minattr,maxattr,length.out=3),2),labels=round(seq(minattr,maxattr,length.out=3),2)
+              )+
+              coord_fixed()+
+              labs(x ="Longitude", y = "Latitude")+ #title=input$attributeL,
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+          }else{
+            ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=attribute, group=indiv))+ #, size=input$linesize
+              scale_colour_gradient2(low=input$colmin, mid=input$colmid, high=input$colmax, midpoint=mpt, name=input$attributeL
+                                     # , breaks=round(seq(minattr,maxattr,length.out=3),2),labels=round(seq(minattr,maxattr,length.out=3),2)
+              )+
+              coord_fixed()+
+              labs(x ="Longitude", y = "Latitude")+ #title=input$attributeL,
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+          }
+          
         }else{ 
           ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=attribute, group=indiv))+ #, size=input$linesize
             scale_color_discrete(name=input$attributeL)+
@@ -89,6 +106,7 @@ shinyModule <- function(input, output, session, data) {
             theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
                   panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
         }
+        
       }else if(input$panels=="Multipanel"){
         output$warningtext <- renderText({"WARNING: Aspect ratio of plots is distorted and not 1/1"})
         if(nrow(mDF)==0){ ## if plot is empty
@@ -100,15 +118,27 @@ shinyModule <- function(input, output, session, data) {
             minattr <- min(mDF[, "attribute"],na.rm=T)
             maxattr <- max(mDF[, "attribute"],na.rm=T)
             mpt <- (minattr+maxattr)/2
-            ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=attribute, group=indiv))+ #, size=input$linesize
-              facet_wrap(~indiv, scales="free")+
-              scale_colour_gradient2(low=input$colmin, mid=input$colmid, high=input$colmax, midpoint=mpt, name=input$attributeL
-                                     # , breaks=round(seq(minattr,maxattr,length.out=3),2),labels=round(seq(minattr,maxattr,length.out=3),2)
-              )+
-              # coord_fixed()+
-              labs( x ="Longitude", y = "Latitude")+ #title=input$attributeL,
-              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                    panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+            if(class(mDF[, "attribute"])=="units"){
+              ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=as.numeric(attribute), group=indiv))+ #, size=input$linesize
+                facet_wrap(~indiv, scales="free")+
+                scale_colour_gradient2(low=input$colmin, mid=input$colmid, high=input$colmax, midpoint=as.numeric(mpt), name=paste0(input$attributeL," (",units(mDF[, "attribute"])$numerator,")")
+                                       # , breaks=round(seq(minattr,maxattr,length.out=3),2),labels=round(seq(minattr,maxattr,length.out=3),2)
+                )+
+                # coord_fixed()+
+                labs( x ="Longitude", y = "Latitude")+ #title=input$attributeL,
+                theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                      panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+            }else{
+              ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=attribute, group=indiv))+ #, size=input$linesize
+                facet_wrap(~indiv, scales="free")+
+                scale_colour_gradient2(low=input$colmin, mid=input$colmid, high=input$colmax, midpoint=mpt, name=input$attributeL
+                                       # , breaks=round(seq(minattr,maxattr,length.out=3),2),labels=round(seq(minattr,maxattr,length.out=3),2)
+                )+
+                # coord_fixed()+
+                labs( x ="Longitude", y = "Latitude")+ #title=input$attributeL,
+                theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+                      panel.background = element_blank(), panel.border = element_rect(colour = "black", fill=NA, size=1))
+            }
           }else{ 
             ggplot(mDF) + geom_path(aes(x=long, y=lat, colour=attribute, group=indiv))+
               facet_wrap(~indiv, scales="free")+

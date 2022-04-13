@@ -22,6 +22,12 @@
       },
       {
         "name": "ggforce"
+      },
+      {
+        "name": "units"
+      },
+      {
+        "name": "lubridate"
       }
     ]
   },
