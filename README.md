@@ -8,7 +8,7 @@ Github repository: github.com/movestore/PlotTracksColoredByAttribute
 Each segment of the plotted track(s) can be colored by the values of any of the available attributes associated to the locations. Single or multiple individuals can be displayed simultaneously.
 
 ## Documentation
-This App is embedded in an shiny UI, enabling the user to interactively select the attribute by which the segments of the track should be colored, the individuals to be display, the color gradient and if the tracks should be displayed all in one panel, or in multiple panels (one per individual). 
+This App is embedded in an shiny UI, enabling the user to interactively select the attribute by which the segments of the track should be colored, the individuals to be display, the color gradient and if the tracks should be displayed all in one panel, or in multiple panels (one per individual). It is possible to zoom in to a plot by selecting an area with the mouse and double click. To go back to the full plot, double click again.
 
 The created plot can than be saved locally via the `Save plot` button. By default the size of the saved plot depends on the screen of the users device. Optionally the plot can be saved with a width and height set by the user. 
 
