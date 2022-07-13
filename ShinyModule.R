@@ -16,6 +16,16 @@ library(lubridate)
 # if variable is factor, give color palette options?
 # make multipanel with aspect ratio==1, look into cowplot pkg
 # add costline, or something that may give orientation on where the tracks are
+# when a single individual is plotted the legendcode does not appear !?
+
+## Sarahs suggestions:
+# Add the results to the MoveStack. For example, add something like an attribute 'color' containing the hexadecimal code for the color and an attribute 'color-legend' containing the value used to define the color. This would allow the results to be saved as an RDS or passed on to a subsequent app to create a shapefile, kml, etc.
+# Provide color ramps for categories
+# One part of her request was to be able to distinguish both individual tracks + the attribute of interest. She said when they have maps with 100+ animals, they use different color ramps (e.g., blues and reds). Even though colors are reused, if they are not adjacent it is still effective. I also though of exploring the possibility of coloring by 2 different attributes.
+# Offer some standard background map options.
+# Offer a points option with different symbols. dropdown to choose pch symbols and define color/line/alpha/size
+# a select/unselect all (indiv) would be helpful.
+# ckeck tmap and mapview
 
 
 shinyModuleUserInterface <- function(id, label) {
@@ -30,6 +40,7 @@ shinyModuleUserInterface <- function(id, label) {
       column(2,colourInput(ns("colmid"), "mid", "yellow")),
       column(2,colourInput(ns("colmax"), "high", "red"))),
     uiOutput(ns('uiIndivL')),
+    # actionButton(ns("selectall"), label="Select/Deselect all individuals"),
     span(textOutput(ns("warningtext")),
          plotOutput(ns("plot"), dblclick = ns("plot_dblclick"), brush = brushOpts(id =ns("plot_brush"),resetOnNew = TRUE), height = "65vh"), style="color:red"), 
     fluidRow(
@@ -42,11 +53,11 @@ shinyModuleUserInterface <- function(id, label) {
   )
 }
 
-shinyModuleConfiguration <- function(id, input) {
-  ns <- NS(id)
-  configuration <- list()
-  configuration
-}
+# shinyModuleConfiguration <- function(id, input) {
+#   ns <- NS(id)
+#   configuration <- list()
+#   configuration
+# }
 
 shinyModule <- function(input, output, session, data) {
   ns <- session$ns
@@ -63,6 +74,27 @@ shinyModule <- function(input, output, session, data) {
       # yes = icon("check-square"), no = icon("square-o")))
       yes = icon("ok",lib = "glyphicon"))) #, no = icon("remove",lib = "glyphicon")
   })
+  
+  # observeEvent(input$selectall,{
+  # observe({
+  #       updateCheckboxGroupButtons(session=session, 
+  #                                  ns("indivL"), 
+  #                                  # "Select individuals", size="sm", 
+  #                                  choices=namesIndiv(data),
+  #                                  # selected=c(namesIndiv(data))
+  #                                  selected=if (input$selectall) c(namesIndiv(data))
+  #                                  # ,status="default",checkIcon = list(yes = icon("ok",lib = "glyphicon"))
+  #                                  )
+  #     # } else {
+  #     #   updateCheckboxGroupInput(session=session, 
+  #     #                            ns("indivL"), 
+  #     #                            # "Select individuals", size="sm", 
+  #     #                            # choices=namesIndiv(data), 
+  #     #                            selected=c()
+  #     #                            # ,status="default",checkIcon = list(yes = icon("ok",lib = "glyphicon"))
+  #     #                            )
+  #     # }}
+  # })
   
   ## zoom into plot
   ranges <- reactiveValues(x = NULL, y = NULL)
