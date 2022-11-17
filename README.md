@@ -12,6 +12,8 @@ This App is embedded in an shiny UI, enabling the user to interactively select t
 
 The created plot can than be saved locally via the `Save plot` button. By default the size of the saved plot depends on the screen of the users device. Optionally the plot can be saved with a width and height set by the user. 
 
+The background map only displays country border lines. If your data is only within one country, you will just see a grey background. More detailed background maps to be added soon.
+
 
 ### Input data
 moveStack in Movebank format
@@ -36,8 +38,6 @@ The `Save Plot` button enables a local download of the created plot.
 `Save Plot`: locally downloads the current plot.
 
 `Width(mm)` & `Height(mm)`: optional. Save plot with personalized width and hight in mm.
-
-`Store current configuration`: save the current configuration for future use in the same workflow.
 
 ### Null or error handling
 **Data**: For use in further Apps the input data set is returned unmodified. Empty input will give an error.
