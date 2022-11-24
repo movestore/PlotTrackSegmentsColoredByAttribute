@@ -28,6 +28,12 @@
       },
       {
         "name": "lubridate"
+      },
+      {
+        "name": "rnaturalearth"
+      },
+      {
+        "name": "sf"
       }
     ]
   },
