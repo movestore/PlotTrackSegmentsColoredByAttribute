@@ -26,7 +26,7 @@ none
 
 The `Save Plot` button enables a local download of the created plot.
 
-### Parameters
+### Settings
 `Select attribute`: one attribute from the drop down list can be selected. All available attributes associated to the locations of the study are displayed.
 
 `Choose display mode`: the tracks can be either displayed on a `Single panel` or on a `Multipanel`, were each individual is displayed on one panel. Currently the plots in the multipanel display have distorted aspect ratio, i.e. it is not 1/1.
